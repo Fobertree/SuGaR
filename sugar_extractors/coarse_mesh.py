@@ -13,6 +13,7 @@ from rich.console import Console
 
 def extract_mesh_from_coarse_sugar(args):
     CONSOLE = Console(width=120)
+    torch.serialization.add_safe_globals([np._core.multiarray.scalar])
     
     all_sugar_mesh_paths = []
 
@@ -167,7 +168,13 @@ def extract_mesh_from_coarse_sugar(args):
     else:
         CONSOLE.print(f"\nLoading the coarse SuGaR model from path {sugar_checkpoint_path}...")
         torch.serialization.add_safe_globals([np._core.multiarray.scalar])
-        checkpoint = torch.load(sugar_checkpoint_path, map_location=nerfmodel.device, weights_only=False)
+        with torch.serialization.safe_globals([np._core.multiarray.scalar]):
+            try:
+                checkpoint = torch.load(sugar_checkpoint_path, map_location=nerfmodel.device, weights_only=False)
+            except Exception:
+                print("Try loading weights only TRUE. THIS WILL FAIL BUT JUST IN CASE")
+                checkpoint = torch.load(sugar_checkpoint_path, map_location=nerfmodel.device, weights_only=True)
+        
         colors = SH2RGB(checkpoint['state_dict']['_sh_coordinates_dc'][:, 0, :])
         sugar = SuGaR(
             nerfmodel=nerfmodel,
