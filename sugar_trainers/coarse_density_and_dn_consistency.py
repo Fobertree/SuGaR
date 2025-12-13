@@ -541,7 +541,6 @@ def coarse_training_with_density_regularization_and_dn_consistency(args):
     
     # ====================Loss function====================
 
-    pred_rgb, gt_rgb = pred_rgb.to(device), gt_rgb.to(device)
         
     if loss_function == 'l1':
         loss_fn = l1_loss
@@ -549,6 +548,7 @@ def coarse_training_with_density_regularization_and_dn_consistency(args):
         loss_fn = l2_loss
     elif loss_function == 'l1+dssim':
         def loss_fn(pred_rgb, gt_rgb):
+            pred_rgb, gt_rgb = pred_rgb.to(device), gt_rgb.to(device)
             return (1.0 - dssim_factor) * l1_loss(pred_rgb, gt_rgb) + dssim_factor * (1.0 - ssim(pred_rgb, gt_rgb))
     CONSOLE.print(f'Using loss function: {loss_function}')
     
