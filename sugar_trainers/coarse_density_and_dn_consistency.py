@@ -540,7 +540,6 @@ def coarse_training_with_density_regularization_and_dn_consistency(args):
         
     
     # ====================Loss function====================
-
         
     if loss_function == 'l1':
         loss_fn = l1_loss

@@ -8,6 +8,7 @@ from pytorch3d.io import save_obj
 from sugar_scene.gs_model import GaussianSplattingWrapper
 from sugar_scene.sugar_model import SuGaR, extract_texture_image_and_uv_from_gaussians
 from sugar_utils.spherical_harmonics import SH2RGB
+import numpy as np
 
 from rich.console import Console
 
@@ -108,7 +109,15 @@ def extract_mesh_and_texture_from_refined_sugar(args):
     o3d_mesh = o3d.io.read_triangle_mesh(sugar_mesh_path)
     
     # --- Loading refined SuGaR model ---
-    checkpoint = torch.load(refined_model_path, map_location=nerfmodel.device)
+    try:
+        torch.serialization.add_safe_globals([np._core.multiarray.scalar])
+        with torch.serialization.safe_globals([np._core.multiarray.scalar]):
+            checkpoint = torch.load(refined_model_path, map_location=nerfmodel.device)
+            
+    except Exception as e:
+        print(f"refined model path: ", refined_model_path)
+        print("ERROR LOADING REFINED MODEL: ", e)
+
     refined_sugar = SuGaR(
         nerfmodel=nerfmodel,
         points=checkpoint['state_dict']['_points'],
