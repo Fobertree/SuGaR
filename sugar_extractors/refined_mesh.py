@@ -112,11 +112,16 @@ def extract_mesh_and_texture_from_refined_sugar(args):
     try:
         torch.serialization.add_safe_globals([np._core.multiarray.scalar])
         with torch.serialization.safe_globals([np._core.multiarray.scalar]):
-            checkpoint = torch.load(refined_model_path, map_location=nerfmodel.device)
+            # should load weights_only = False
+            checkpoint = torch.load(refined_model_path, map_location=nerfmodel.device, weights_only=False)
             
     except Exception as e:
         print(f"refined model path: ", refined_model_path)
         print("ERROR LOADING REFINED MODEL: ", e)
+        # attempt weights only = True, should fail
+        with torch.serialization.safe_globals([np._core.multiarray.scalar]):
+            checkpoint = torch.load(refined_model_path, map_location=nerfmodel.devic)
+
 
     refined_sugar = SuGaR(
         nerfmodel=nerfmodel,
